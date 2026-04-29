@@ -18,7 +18,7 @@ list2 = [21, ['I love AI', 'LLMs are wonderful',
 
 
 class DataProcessor(ABC):
-    def __init__(self, name) -> None:
+    def __init__(self, name: str) -> None:
         self.name = name
         self.data: list[Any] = []
         self.rank: int = 0
@@ -41,7 +41,7 @@ class DataProcessor(ABC):
 
 
 class NumericProcessor(DataProcessor):
-    def __init__(self, name) -> None:
+    def __init__(self, name: str) -> None:
         super().__init__(name)
         self.data: list[str] = []
 
@@ -66,7 +66,7 @@ class NumericProcessor(DataProcessor):
 
 
 class TextProcessor(DataProcessor):
-    def __init__(self, name) -> None:
+    def __init__(self, name: str) -> None:
         super().__init__(name)
         self.data: list[str] = []
 
@@ -90,7 +90,7 @@ class TextProcessor(DataProcessor):
 
 
 class LogProcessor(DataProcessor):
-    def __init__(self, name) -> None:
+    def __init__(self, name: str) -> None:
         super().__init__(name)
         self.data: list[str] = []
 
@@ -102,16 +102,16 @@ class LogProcessor(DataProcessor):
         else:
             return False
 
-    def ingest(self, data: dict | list[dict]) -> None:
+    def ingest(self, data: dict[str, str] | list[dict[str, str]]) -> None:
         if not self.validate(data):
             raise TypeError("Improper dict data")
         if isinstance(data, dict):
             self.total_processed += 1
-            self.data.append(str(data))
+            self.data.append(f"{data['log_level']}: {data['log_message']}")
         if isinstance(data, list):
             self.total_processed += len(data)
             for x in data:
-                self.data.append(str(x))
+                self.data.append(f"{x['log_level']}: {x['log_message']}")
 
 
 class ExportPlugin(Protocol):
@@ -123,14 +123,14 @@ class CSVExport:
     def process_output(self, data: list[tuple[int, str]]) -> None:
         if data:
             dictionary = ",".join(i for _, i in data)
-            print(f"CSV Output:\n {dictionary}")
+            print(f"CSV Output:\n{dictionary}")
 
 
 class JSONExport:
     def process_output(self, data: list[tuple[int, str]]) -> None:
         if data:
             dictionary = ', '.join(f'"item_{i}": "{d}"' for i, d in data)
-            print(f"JSON Output:\n {{{dictionary}}}")
+            print(f"JSON Output:\n{{{dictionary}}}")
 
 
 class DataStream:
@@ -205,9 +205,10 @@ def demonstrate_datapipeline() -> None:
     ds.print_process_stats()
     print("Send 5 Processed data from each processor to JSON plugin:")
     ds.output_pipeline(5, plugin2)
+    ds.print_process_stats()
 
 
-def main():
+def main() -> None:
     print("=== Code Nexus - Stream ===\n")
     print("initialize Data Stream....")
     demonstrate_datapipeline()

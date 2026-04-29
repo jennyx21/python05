@@ -1,10 +1,16 @@
 from typing import Any
 from abc import ABC, abstractmethod
 
+list_test = ['Hello world', [3.14, -1, 2.71],
+             [{'log_level': 'WARNING', 'log_message':
+               'Telnet access! Use ssh instead'},
+              {'log_level': 'INFO', 'log_message':
+               'User wil isconnected'}], 42, ['Hi', 'five']]
+
 
 class DataProcessor(ABC):
-    def __init__(self, name) -> None:
-        self.name = name
+    def __init__(self, name: str) -> None:
+        self.name: str = name
         self.data: list[Any] = []
         self.rank: int = 0
 
@@ -25,7 +31,7 @@ class DataProcessor(ABC):
 
 
 class NumericProcessor(DataProcessor):
-    def __init__(self, name) -> None:
+    def __init__(self, name: str) -> None:
         super().__init__(name)
         self.data: list[str] = []
 
@@ -48,7 +54,7 @@ class NumericProcessor(DataProcessor):
 
 
 class TextProcessor(DataProcessor):
-    def __init__(self, name) -> None:
+    def __init__(self, name: str) -> None:
         super().__init__(name)
         self.data: list[str] = []
 
@@ -70,7 +76,7 @@ class TextProcessor(DataProcessor):
 
 
 class LogProcessor(DataProcessor):
-    def __init__(self, name) -> None:
+    def __init__(self, name: str) -> None:
         super().__init__(name)
         self.data: list[str] = []
 
@@ -82,18 +88,19 @@ class LogProcessor(DataProcessor):
         else:
             return False
 
-    def ingest(self, data: dict | list[dict]) -> None:
+    def ingest(self, data: dict[str, str] | list[dict[str, str]]) -> None:
         if not self.validate(data):
             raise TypeError("Improper dict data")
         if isinstance(data, dict):
-            self.data.append(data)
+            self.data.append(f"{data['log_level']}: {data['log_message']}")
         if isinstance(data, list):
-            self.data += data
+            for x in data:
+                self.data.append(f"{x['log_level']}: {x['log_message']}")
 
 
 def test_numeric() -> None:
     print("Testing Numeric Proccessor...")
-    list1 = [1, 2, 3, 4, 5]
+    list1: list[int] = [1, 2, 3, 4, 5]
     num: int = 42
     text: str = "hello"
     text2: str = "foo"
@@ -161,14 +168,14 @@ def test_log() -> None:
     while i < 2:
         out: tuple[int, str] = processor.output()
         rank, value = out
-        log_level, log_message = value
-        log_level = value[log_level]
-        log_message = value[log_message]
-        print(f"Text value {rank}: {log_level}: {log_message}")
+        # log_level, log_message = value
+        # log_level = value[log_level]
+        # log_message = value[log_message]
+        print(f"Text value {rank}: {value}")
         i += 1
 
 
-def main():
+def main() -> None:
     print("=== Code Nexus - Data Processor ===\n")
     test_numeric()
     test_text()
